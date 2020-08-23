@@ -14,8 +14,10 @@ def get_time():
 def get_case_number():
     r = requests.get("https://lsu.edu/roadmap/")
     soup = BeautifulSoup(r.text, "html.parser")
-    tag = soup.find(style="color: #fdbe3b; font-size: 28px;")
-    return int(tag.string)
+    tag = soup.find(string="Positive Test Results")
+    parent = tag.parent.parent
+    casenum = int(parent.find("p").string)
+    return casenum
 
 def get_prev_number():
     f = open("lsu_coronavirus_data.csv", "r")
