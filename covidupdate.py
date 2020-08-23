@@ -6,7 +6,7 @@ APP_SECRET = ""
 ACCESS_TOKEN = ""
 ACCESS_SECRET = ""
 
-POST_TIME = "09:00:00"
+POST_TIME = "09:00:00" # 9AM local time
 
 def get_time():
     return time.strftime("%H:%M:%S")
@@ -15,8 +15,8 @@ def get_case_number():
     r = requests.get("https://lsu.edu/roadmap/")
     soup = BeautifulSoup(r.text, "html.parser")
     tag = soup.find(string="Positive Test Results")
-    parent = tag.parent.parent
-    casenum = int(parent.find("p").string)
+    parent = tag.parent.parent.find_all("p")
+    casenum = int(parent[2].contents[1].string)
     return casenum
 
 def get_prev_number():
