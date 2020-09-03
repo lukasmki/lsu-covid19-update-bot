@@ -12,11 +12,14 @@ def get_time():
     return time.strftime("%H:%M:%S")
 
 def get_case_number():
-    r = requests.get("https://lsu.edu/roadmap/")
+    r = requests.get("https://lsu.edu/roadmap/covid-dashboard/index.php")
     soup = BeautifulSoup(r.text, "html.parser")
-    tag = soup.find(string="Positive Test Results")
-    parent = tag.parent.parent.find_all("p")
-    casenum = int(parent[2].contents[1].string)
+    table = soup.find("tbody")
+    items = table.find_all("tr")
+    casenum = 0
+    for item in items:
+        data = item.find_all("td")
+        casenum += int(data[1].string)
     return casenum
 
 def get_prev_number():
@@ -29,12 +32,12 @@ def get_prev_number():
     f.close()
     return int(line.split(",")[1])
 
-def save(date, casenum, dailychange):
+def save(date, casenum, change):
     with open("lsu_coronavirus_data.csv", "a") as f:
-        f.write(f"{date}, {casenum}, {dailychange}\n")
+        f.write(f"{date}, {casenum}, {change}\n")
         
-def post(date, casenum, dailychange):
-    tweet = f"Yesterday, LSU confirmed {dailychange} new cases of COVID-19. The total number of confirmed cases is now {casenum}. lsu.edu/roadmap"
+def post(date, casenum, change):
+    tweet = f"LSU has confirmed {change} new cases of COVID-19. The total number of confirmed cases is now {casenum}. lsu.edu/roadmap"
     api.update_status(tweet)
     print(date, get_time(), "i tweeted successfully.")
 
@@ -42,9 +45,9 @@ def main():
     date = time.strftime(r"%d/%m/%Y")
     casenum = get_case_number()
     prevnum = get_prev_number()
-    dailychange = casenum - prevnum
-    save(date, casenum, dailychange)
-    post(date, casenum, dailychange)
+    change = casenum - prevnum
+    save(date, casenum, change)
+    post(date, casenum, change)
 
 # authenticate
 auth = tweepy.OAuthHandler(APP_KEY, APP_SECRET)
